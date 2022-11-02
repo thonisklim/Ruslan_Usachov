@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class Item(ABC):
+class Folder(ABC):
     @abstractmethod
     def move(self):
         pass
@@ -12,10 +12,10 @@ class Item(ABC):
 
     # virtual
     def place(self):
-        return "[I was in Item]"
+        return "[I was in Folder]"
 
 
-class Folder(Item):
+class File(Folder):
     smth = 128
 
     def move(self):
@@ -25,11 +25,11 @@ class Folder(Item):
         return 15
 
     def place(self):
-        return "[I was in Folder]"
+        return "[I was in File]"
 
 
-class Properties(Item):
-    speed = 100
+class Properties(Folder):
+    size = 512
     collision = 0
 
     def move(self):
@@ -46,7 +46,7 @@ class Properties(Item):
         return "U cool :)"
 
 
-class SubItem(Folder, Properties):
+class Shortcuts(File, Properties):
     def move(self):
         return 20
 
@@ -57,5 +57,5 @@ class SubItem(Folder, Properties):
         return "U very cool ;D"
 
 
-a = SubItem()
-print("", a.smth, a.speed, a.collision, a.move(), a.open(), "\n", a.place(), a.say())
+a = Shortcuts()
+print("", a.smth, a.size, a.collision, a.move(), a.open(), "\n", a.place(), a.say())
