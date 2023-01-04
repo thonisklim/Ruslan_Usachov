@@ -42,7 +42,6 @@ def get_val(card_num):
 
 
 def what_card(i):
-    # print(i, i // 4, i % 4)
     return get_val(i) + get_mast(i)
 
 
@@ -78,13 +77,12 @@ class Players(Cards):
 
     def __init__(self):
         super().__init__()
-        self.deck = Cards()
         self.players_arr = []
 
-    def players_init(self, num):
-        for i in range(num):
+    def players_init(self, num_of_players, num_of_cards, deck):
+        for i in range(num_of_players):
             player = Players()
-            player.player_deck = self.deck.give_cards(6)
+            player.player_deck = deck.give_cards(num_of_cards)
             self.players_arr.append(player)
 
     def give_deck(self):
@@ -102,6 +100,6 @@ class Players(Cards):
 
 
 obj = Players()
-obj.players_init(4)
+obj.players_init(4, 6, obj)
 obj.show_decks()
 # print(obj.players_arr[0].my_deck())
