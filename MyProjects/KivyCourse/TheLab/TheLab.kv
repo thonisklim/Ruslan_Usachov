@@ -1,0 +1,310 @@
+CanvasExample5
+
+#:set s dp(150)
+
+<CanvasExample4>:
+    Button:
+        text: "A"
+        pos: 0, 200
+        on_press: root.on_button_press()
+
+<CanvasExample1>:
+    canvas:
+        Rectangle:
+            pos: self.center_x-s/2, self.center_y-s/2
+            size: s, s
+        Ellipse:
+            pos: 200, 500
+            size: s, s/2
+        Line:
+            points: (0, 0, self.width/4, 100, self.width/2, 0, self.width*3/4, 100, self.width, 0)
+            width: 2
+
+
+<CanvasExample2>:
+    canvas:
+        Line:
+            points: (self.width/2, 0, self.width/2, self.height)
+        Line:
+            points: (0, self.height/2, self.width, self.height/2)
+
+
+<CanvasExample3>:
+    canvas:
+        Color:
+            rgb: "041445"
+        Line:
+            circle: (200, 200, 100) #center_x, center_y, radius
+            width: 2
+        Line:
+            ellipse: (300, 300, 100, 50) #center_x, center_y, radius_x, radius_y
+            width: 2
+        Color:
+            rgb: 1, 1, 1
+        Line:
+            rectangle: (250, 100, 300, 200) #x, y, width, height
+            width: 2
+
+
+<WindowManager@ScreenManager>
+    FirstWindow:
+    SecondWindow:
+    ThirdWindow:
+
+<FirstWindow@Screen>:
+    name: "first"
+    BoxLayout:
+        orientation: "vertical"
+        size: root.width, root.height
+        WidgetExample:
+        BoxLayout:
+            cols: 2
+            orientation: "horizontal"
+            Button:
+                text: "Previous Screen"
+                font_size: 32
+                on_release:
+                    root.manager.current = "third"
+                    root.manager.transition.direction = 'right'
+            Button:
+                text: "Next Screen"
+                font_size: 32
+                on_release:
+                    root.manager.current = "second"
+                    root.manager.transition.direction = 'left'
+
+<SecondWindow@Screen>
+    name: "second"
+    BoxLayout:
+        orientation: "vertical"
+        size: root.width, root.height
+        ImageExample:
+        BoxLayout:
+            cols: 2
+            orientation: "horizontal"
+            Button:
+                text: "Previous Screen"
+                font_size: 32
+                on_release:
+                    root.manager.current = "first"
+                    root.manager.transition.direction = 'right'
+            Button:
+                text: "Next Screen"
+                font_size: 32
+                on_release:
+                    root.manager.current = "third"
+                    root.manager.transition.direction = 'left'
+
+<ThirdWindow@Screen>
+    name: "third"
+    BoxLayout:
+        orientation: "vertical"
+        size: root.width, root.height
+        ExampleTabWindow:
+        BoxLayout:
+            cols: 2
+            orientation: "horizontal"
+            Button:
+                text: "Previous Screen"
+                font_size: 32
+                on_release:
+                    root.manager.current = "second"
+                    root.manager.transition.direction = 'right'
+            Button:
+                text: "Next Screen"
+                font_size: 32
+                on_release:
+                    root.manager.current = "first"
+                    root.manager.transition.direction = 'left'
+
+
+<ExampleTabWindow@TabbedPanel>:
+    #do_default_tab: False
+    default_tab_text: "I`m a default"
+    #top-bottom left-mid-right
+    tab_pos: 'bottom_right'
+    TabbedPanelHeader:
+        text: "I`m a header"
+    TabbedPanelItem:
+        text: "tab1"
+        background_normal: "RESOURCES/images/cake.jpg"
+        BoxLayout:
+            Image:
+                source: "RESOURCES/images/cake.jpg"
+            Label:
+                text: "It`s a first tab"
+    TabbedPanelItem:
+        text: "tab2"
+        Label:
+            text: "It`s a second tab"
+    TabbedPanelItem:
+        text: "I`m red"
+        background_color: 1, 0, 0, 1
+        BackgroundLabel:
+            text: "It`s a red tab"
+            background_color: 1, 0, 0, 0.3
+
+
+<ImageExample@GridLayout>
+    cols: 3
+    Image:
+        source: "RESOURCES/images/cake.jpg"
+    Image:
+        source: "RESOURCES/images/cake.jpg"
+        allow_stretch: True
+    Image:
+        source: "RESOURCES/images/cake.jpg"
+        allow_stretch: True
+        keep_ratio: False
+
+
+<WidgetExample>
+    cols: 3
+    ToggleButton:
+        text: "OFF"
+        on_state: root.on_toggle_button_state(self)
+        size_hint: None, 1
+        width: "100dp"
+    Button:
+        text: "Click here"
+        on_press: root.on_button_click()
+        disabled: not root.toggle_on_state
+    Label:
+        text: root.my_text
+        font_name: "RESOURCES/fonts/Lcd.ttf"
+        font_size: "90dp"
+        color: "#102142"
+    Switch:
+        id: my_switch
+        on_active: root.on_switch_active(self)
+        size_hint: None, 1
+        width: "100dp"
+        active: True
+    Slider:
+        id: my_slider
+        min: 0
+        max: 100
+        value: 50
+        disabled: not my_switch.active
+        #orientation: "vertical"
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: str(int(my_slider.value))
+            font_name: "RESOURCES/fonts/Lcd.ttf"
+            font_size: "90dp"
+        ProgressBar:
+            max: 100
+            value: my_slider.value
+    TextInput:
+        id: my_text_input
+        size_hint: None, 1
+        width: "100dp"
+        text: "foo"
+        multiline: False
+        on_text_validate: root.on_text_validate(self)
+    Label:
+        text: "Your name is: " + root.text_input_str
+
+
+<PageLayoutExample@PageLayout>:
+    BoxLayoutExample:
+    ScrollViewExample:
+    MainWidget:
+
+
+<ScrollViewExample@ScrollView>
+    StackLayoutExample:
+        size_hint: 1, None
+        height: self.minimum_height
+
+
+<StackLayoutExample>:
+    # left-right top-bottom
+    # orientation: "lr-tb"
+    # padding: ("80dp", "20dp", "20dp", "20dp")
+    # spacing: "20dp", "20dp"
+
+
+<GridLayoutExample@GridLayout>:
+    # rows
+    # cols
+    # cols: 3
+    rows: 2
+    Button:
+        text: "A"
+        size_hint: .5, 1
+    BoxLayoutExample:
+    Button:
+        text: "C"
+    Button:
+        text: "D"
+        size_hint: .5, 1
+    Button:
+        text: "E"
+    Button:
+        text: "F"
+
+
+<AnchorLayoutExample>:
+    # anchor_x: right, left, center
+    # anchor_y: bottom, top, center
+    anchor_x: "left"
+    anchor_y: "top"
+    BoxLayout:
+        size_hint: .2, .2
+        Button:
+            text: "A"
+        Button:
+            text: "B"
+
+
+<BoxLayoutExample>:
+    # orientation: "vertical"
+    Button:
+        text: "A"
+        size_hint: .5, .5
+        #height: "60dp"
+        # x, center_x, right
+        # y, center_y, top
+        # pos_hint:{"center_x":.5}
+        pos_hint:{"center_y": .5  }
+    BoxLayout:
+        orientation: "vertical"
+        spacing: "10dp"
+        Button:
+            text: "B1"
+        Button:
+            text: "B2"
+        Button:
+            text: "B3"
+        Button:
+            text: "B4"
+    Label:
+        text: "C"
+
+
+<MainWidget>:
+    Button:
+        text: "Hello"
+        size: "80dp", "40dp"
+        pos: "100dp", "200dp"
+        color: 0, 0, 1, 1
+    Label:
+        text: "Hello2"
+        size: "40dp", "40dp"
+        pos: "200dp", "300dp"
+        color: 1, 0, 0, 1
+
+<BackgroundLabel@Label+BackgroundColor>
+    background_color: 0, 0, 0, 0
+
+
+<BackgroundColor@Widget>
+    background_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
