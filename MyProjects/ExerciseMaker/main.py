@@ -1,6 +1,8 @@
 import random
 
 translation_pairs = []
+stress_list = list("А́")
+normal_list = list("АаЕеИиІіОоУуЯяЮюЇїЄє")
 
 # 0 -separator
 # 1 - list of wrong symbols
@@ -12,7 +14,11 @@ memory = ['', []]
 # а між кожною парою слів має стояти ентер (\n)
 def input_tr(new_sep):
     if new_sep:
-        gimme_separator()
+        sep_inp = input("Please, input separator, like /, or - which used in text\n"
+                        "input enter to use –\n")
+        if sep_inp == '':
+            sep_inp = '–'
+        memory[0] = sep_inp
     tr_separator = memory[0]
     print("input your translations, they have to be written like \'a - b\'\nto end input you need to press enter,\n"
           "than write '.', and than press enter again")
@@ -39,32 +45,25 @@ def remove_wrong(some_string, list_of_wrong_symbols):
     for symbol in list_of_wrong_symbols:
         while 1:
             remove_index = some_string.find(symbol)
-            if remove_index == -1:
-                break
-            else:
+            if remove_index != -1:
                 some_string = some_string[:remove_index] + some_string[remove_index + 1:]
+            else:
+                break
     return some_string
-
-
-def gimme_separator():
-    memory[0] = input("please, input separator, like /, or - which used in text\n")
-
-
-def gimme_black_list():
-    memory[1] = list(input("Write without spaces what symbols you want me to remove?\n"))
 
 
 def do_nicer(new_list):
     if new_list:
-        gimme_black_list()
+        memory[1] = list(input("Write without spaces what symbols you want me to remove?\n"))
     for i in range(len(translation_pairs)):
         for k in range(len(translation_pairs[i])):
             translation_pairs[i][k] = remove_wrong(translation_pairs[i][k], memory[1])
+            translation_pairs[i][k] = remove_wrong(translation_pairs[i][k], stress_list[1])
 
 
 def nice_out():
     for item in translation_pairs:
-        print(f"{item[0]} - {item[1]}")
+        print(f"{item[0]} – {item[1]}")
 
 
 def do_match_exercises():
@@ -131,6 +130,7 @@ def do_exercises():
 
 
 def wanna_repeat():
+    do_border()
     return input("Input 1 if you want to repeat\n") == '1'
 
 
@@ -179,6 +179,7 @@ def main():
                 while 1:
                     do_border()
                     input_tr(first_time)
+                    print(translation_pairs)
                     do_nicer(first_time)
                     nice_out()
                     translation_pairs.clear()
