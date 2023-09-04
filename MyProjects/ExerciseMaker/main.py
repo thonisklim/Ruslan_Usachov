@@ -131,7 +131,8 @@ def do_exercises():
 
 def wanna_repeat():
     do_border()
-    return input("Input 1 if you want to repeat\n") == '1'
+    return input("Input 1 if you want to repeat with same formatting\n"
+                 "Input 2 if you want to repeat but change formatting\n")
 
 
 def main():
@@ -157,10 +158,13 @@ def main():
                     do_nicer(first_time)
                     do_exercises()
                     translation_pairs.clear()
-                    if not wanna_repeat():
-                        break
-                    # do reset
-                    first_time = False
+                    match wanna_repeat():
+                        case '1':
+                            first_time = False
+                        case '2':
+                            pass
+                        case _:
+                            break
             # exercises without formatting
             case '2':
                 first_time = True
@@ -169,24 +173,29 @@ def main():
                     input_tr(first_time)
                     do_exercises()
                     translation_pairs.clear()
-                    if not wanna_repeat():
-                        break
-                    # do reset
-                    first_time = False
+                    match wanna_repeat():
+                        case '1':
+                            first_time = False
+                        case '2':
+                            pass
+                        case _:
+                            break
             # just nice formatting
             case '3':
                 first_time = True
                 while 1:
                     do_border()
                     input_tr(first_time)
-                    print(translation_pairs)
                     do_nicer(first_time)
                     nice_out()
                     translation_pairs.clear()
-                    if not wanna_repeat():
-                        break
-                    # do reset
-                    first_time = False
+                    match wanna_repeat():
+                        case '1':
+                            first_time = False
+                        case '2':
+                            pass
+                        case _:
+                            break
 
     '''
     find_words_gender("Вагання")'''
