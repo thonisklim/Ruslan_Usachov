@@ -3,6 +3,7 @@ import random
 translation_pairs = []
 stress_list = list("А́")
 normal_list = list("АаЕеИиІіОоУуЯяЮюЇїЄє")
+lists_to_compare = [[], []]
 
 # 0 -separator
 # 1 - list of wrong symbols
@@ -201,5 +202,41 @@ def main():
     find_words_gender("Вагання")'''
 
 
-main()
+def input_bunch():
+    num_bunch = 0
+    while num_bunch < 2:
+        print(f"input your {num_bunch + 1} bunch, they have to be written like \na\nb\nto end input you "
+              f"need to press enter,\nthan write '.', and than press enter again")
+        tr = ""
+        while 1:
+            a = input()
+            if a == '.':
+                break
+            tr += a + '\n'
+        for item in tr.split('\n'):
+            if item == '':
+                pass
+            else:
+                lists_to_compare[num_bunch].append(item)
+        num_bunch += 1
+
+
+def compare_bunches():
+    for i in range(len(lists_to_compare[0])):
+        print(f"{lists_to_compare[0][i]} – {lists_to_compare[1][i]}")
+
+
+def do_compared_bunches():
+    input_bunch()
+    compare_bunches()
+
+
+def do_test():
+    a = "t, (((jjoso"
+    b = ",("
+    for x in b:
+        a.remove(b)
+
+do_compared_bunches()
+# main()
 # print(translation_pairs)
