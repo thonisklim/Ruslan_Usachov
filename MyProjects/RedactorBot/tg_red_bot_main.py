@@ -175,13 +175,14 @@ def do_nicer(message):
 
 
 def nice_formatting(some_string, bad_list):
-    some_string = remove_wrong(some_string, bad_list)
-    last_symbol = some_string[-1]
-    if last_symbol == '?' or last_symbol == '!' or last_symbol == '.':
-        some_string = some_string.capitalize()
-        # here we delete extra spaces
-        while some_string.find(f" {last_symbol}") != -1:
-            some_string = remove_wrong(some_string, [f" {last_symbol}"], last_symbol)
+    if len(some_string) > 0:
+        some_string = remove_wrong(some_string, bad_list)
+        last_symbol = some_string[-1]
+        if last_symbol == '?' or last_symbol == '!' or last_symbol == '.':
+            some_string = some_string.capitalize()
+            # here we delete extra spaces
+            while some_string.find(f" {last_symbol}") != -1:
+                some_string = remove_wrong(some_string, [f" {last_symbol}"], last_symbol)
     return some_string
 
 
@@ -237,6 +238,45 @@ def send_compared_bunches(message):
             out_message += f"{user_data[user_id]['compared_bunches'][0][i]} – {user_data[user_id]['compared_bunches'][1][i]}" + '\n'
         bot.send_message(user_id, out_message)
         print(out_message)
+
+
+@bot.message_handler(commands=['compare_sentence_and_bunch'])
+def do_compare_sentence_and_bunch(message):
+    user_id = message.chat.id
+    if user_id not in user_data:
+        set_def(user_id)
+    user_data[user_id]['compared_bunches'] = []
+    bot.send_message(user_id, "Відправ речення, що буде стояти ЗЛІВА, я його продублюю перед усіма словами\n"
+                              "Після цього речення я поставлю пробіл, і лише потім додам "
+                              "слово з тієї купки, що ти скинеш")
+    bot.register_next_step_handler(message, take_sentence)
+
+
+def take_sentence(message):
+    user_id = message.chat.id
+    # to lower or not to lower, that is the question
+    if user_data[user_id]['do_lower_case']:
+        sentence = message.text.lower()
+    else:
+        sentence = message.text
+    user_data[user_id]['compared_bunches'].append(sentence)
+    bot.send_message(user_id, "Відправ перелік слів, що мають стояти ЗПРАВА, не забудь розділити їх ентерами")
+    bot.register_next_step_handler(message, send_compared_s_and_b)
+
+
+def send_compared_s_and_b(message):
+    user_id = message.chat.id
+    out_message = ""
+    if user_data[user_id]['do_lower_case']:
+        sentence = message.text.lower()
+    else:
+        sentence = message.text
+    user_data[user_id]['compared_bunches'].append(sentence.split('\n'))
+
+    for i in range(len(user_data[user_id]['compared_bunches'][1])):
+        out_message += f"{user_data[user_id]['compared_bunches'][0]} {user_data[user_id]['compared_bunches'][1][i]}" + '\n'
+    bot.send_message(user_id, out_message)
+    print(out_message)
 
 
 @bot.message_handler(func=lambda message: True)

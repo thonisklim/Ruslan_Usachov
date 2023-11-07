@@ -14,7 +14,7 @@ from kivy.uix.button import Button
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.app import MDApp
 from kivymd.uix.tab import MDTabsBase
-from kivy.uix.tabbedpanel import TabbedPanel
+#from kivy.uix.tabbedpanel import TabbedPanel
 
 
 class ExampleTabWindow(MDApp):
@@ -94,6 +94,19 @@ class MainWidget(Widget):
 
 
 class TheLabApp(App):
+    """def animate(self, instance):
+         # create an animation object. This object could be stored
+         # and reused each call or reused across different widgets.
+         # += is a sequential step, while &= is in parallel
+         animation = Animation(pos=(100, 100))
+         # animation += Animation(pos=(200, 100), t='out_bounce')
+         animation += Animation(size=(500, 100))
+         animation += Animation(pos=(500, 100), size=(100, 100))
+
+         # apply the animation on the button, passed in the "instance" argument
+         # Notice that default 'click' animation (changing the button
+         # color while the mouse is down) is unchanged.
+         animation.start(instance)"""
     pass
 
 

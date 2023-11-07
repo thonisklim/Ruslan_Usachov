@@ -1,0 +1,37 @@
+BoxLayoutExample
+
+<WindowManager@ScreenManager>
+    InputWindow:
+    SecondWindow:
+    ThirdWindow:
+
+<InputWindow@Screen>
+    BoxLayoutExample
+
+<BoxLayoutExample@BoxLayout>:
+    orientation: "vertical"
+    BoxLayout:
+        Button:
+            id: selected_path
+            text: "bx1"
+        Button:
+            text: "ax1"
+    BoxLayout:
+        BoxLayout:
+            Button:
+                text: "bx2"
+        BoxLayout:
+            BoxLayout:
+                Button:
+                    text: "Load"
+                    on_release:
+                        app.file_chooser()
+                Button:
+                    text: "NotLoad"
+    BoxLayout:
+        size_hint: 1, .15
+        Button:
+            text: "<="
+        Button:
+            text: "=>"
+
