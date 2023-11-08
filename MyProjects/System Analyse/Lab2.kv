@@ -15,7 +15,9 @@ BoxLayoutExample
             id: selected_path
             text: "bx1"
         Button:
-            text: "ax1"
+            text: "Start"
+            on_release:
+                app.start()
     BoxLayout:
         BoxLayout:
             Button:
@@ -23,11 +25,13 @@ BoxLayoutExample
         BoxLayout:
             BoxLayout:
                 Button:
-                    text: "Load"
+                    text: "Load X"
                     on_release:
-                        app.file_chooser()
+                        app.file_chooser('x')
                 Button:
-                    text: "NotLoad"
+                    text: "Load Y"
+                    on_release:
+                        app.file_chooser('y')
     BoxLayout:
         size_hint: 1, .15
         Button:

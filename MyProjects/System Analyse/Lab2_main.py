@@ -1,67 +1,72 @@
 from kivy import Config
-from kivy.app import App
-from kivy.lang import Builder
 from kivymd.app import MDApp
 from plyer import filechooser
 import numpy as np
 
-'''    def build(self):
-        return Builder.load_file("Lab2.kv")'''
-
-x_table = []
-y_table = []
+Config.set("graphics", "fullscreen", 0)     # "auto"
+Config.write()
 
 
 class Lab2App(MDApp):
-    Config.set("graphics", "fullscreen", 0)     # "auto"
-    Config.write()
+    x_table = []
+    y_table = []
+    selection = []
 
     # choose X
-    def file_chooser(self):
-        filechooser.open_file(on_selection=self.selected)
+    def file_chooser(self, variable_name):
+        filechooser.open_file(on_selection=self.get_path)
+        self.input_table(variable_name)
 
-    def selected(self, selection):
-        if selection:
-            print(selection)
-            self.root.ids.selected_path.text = selection[0]
+    def get_path(self, selection):
+        self.selection = selection
 
+    def input_table(self, variable_name):
+        if self.selection:
+            print(self.selection)
+            file = open(self.selection[0], 'r')
+            skip = 1
+            for line in file.read().split('\n'):
+                if line == '' or skip:
+                    # we're skipping name raw, or empty raw
+                    skip = 0
+                else:
+                    match variable_name:
+                        case 'x':
+                            self.x_table.append(line.replace(',', '.').split('\t'))
+                        case 'y':
+                            self.y_table.append(line.replace(',', '.').split('\t'))
+                        case _:
+                            exit("wrong variable_name")
+                            break
+            # self.root.ids.selected_path.text = selection[0]
+            # print(self.x_table)
 
-def processing_x():  # self, selection
-    x = "q	X11 X12	X21	X22	X31	X32\n" \
-        "1	0	1	0	1	0	0,5\n" \
-        "2	0,1	0,9	0,19	0,91	0,18	0,6\n" \
-        "3	0,2	0,8	0,29	0,81	0,28	0,7\n" \
-        "4	0,3	0,7	0,39	0,71	0,38	0,8\n" \
-        "5	0,4	0,6	0,49	0,61	0,48	0,9\n" \
-        "6	0,5	0,5	0,59	0,51	0,58	1\n" \
-        "7	0,6	0,4	0,69	0,41	0,68	0,4\n" \
-        "8	0,7	0,3	0,79	0,31	0,78	0,3\n" \
-        "9	0,8	0,2	0,89	0,21	0,88	0,2\n" \
-        "10	0,9	0,1	0,99	0,11	0,98	0,1"
-    processed_x = []
-    c = 0
-    # we don't read name raw
-    for item in x.split('\n'):
-        if item == '' or c == 0:
-            c += 1
-            pass
+    def start(self):
+        if self.x_table == [] or self.y_table == []:
+            print("Will You consider filling tables up?")
         else:
-            processed_x.append(item.split('\t'))
+            self.processing()
 
-    # considering that 1st line is variables` names, and 1 column is its number
-    print(processed_x)
-    print(do_norm(processed_x))
+    def processing(self):  # self, selection
+        x = self.x_table
+        y = self.y_table
+        # considering that 1st line is variables` names, and 1 column is its number
+        print('\n')
+        print(do_norm(x))
+        b_q = do_norm(y)
+        print('\n')
+        print(b_q)
 
 
 def do_norm(table):
-    # we don't count q column
+    # we don't normalise q column
     for i in range(1, len(table[0])):
-        my_column = [float(raw[i].replace(',', '.')) for raw in table]
+        my_column = [float(raw[i]) for raw in table]
         min_val = min(my_column)
         max_val = max(my_column)
-        print(i, min_val, max_val)
+        # print(i, min_val, max_val, my_column)
         for k in range(len(table)):
-            table[k][i] = float('{:.4f}'.format((float(table[k][i].replace(',', '.')) - min_val) / (max_val - min_val)))
+            table[k][i] = float('{:.4f}'.format((float(table[k][i]) - min_val) / (max_val - min_val)))
     return table
 
 
@@ -87,5 +92,4 @@ def conjugate_gradient(A, b, x=None, tol=1e-10, max_iter=None):
     return x
 
 
-# Lab2App().run()
-processing_x()
+Lab2App().run()
