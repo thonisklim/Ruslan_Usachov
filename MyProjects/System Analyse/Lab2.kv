@@ -1,41 +1,97 @@
-BoxLayoutExample
+MatrixApp
 
-<WindowManager@ScreenManager>
-    InputWindow:
-    SecondWindow:
-    ThirdWindow:
+<MatrixApp@BoxLayout>:
+    orientation: 'vertical'
 
-<InputWindow@Screen>
-    BoxLayoutExample
-
-<BoxLayoutExample@BoxLayout>:
-    orientation: "vertical"
     BoxLayout:
-        Button:
-            id: selected_path
-            text: "bx1"
-        Button:
-            text: "Start"
-            on_release:
-                app.start()
-    BoxLayout:
+        # Ліва частина вікна (вкладки X та Y)
+        TabsWithTables:
+
+        # Права частина вікна (введення X, Y, P)
         BoxLayout:
+            orientation: 'vertical'
+            GridLayout:
+                size_hint: 1, .4
+                cols: 2
+                Button:
+                    text: 'Input X'
+                    on_release: app.file_chooser('x')
+                Button:
+                    text: 'Input Y'
+                    on_release: app.file_chooser('y')
+            GridLayout:
+                cols: 2
+                size_hint: 1, .3
+                Label:
+                    text: 'P1'
+                TextInput:
+                    id: input_p1
+                    hint_text: 'Введіть P1'
+                    multiline: False
+                Label:
+                    text: 'P2'
+                TextInput:
+                    id: input_p2
+                    hint_text: 'Введіть P2'
+                    multiline: False
+                Label:
+                    text: 'P3'
+                TextInput:
+                    id: input_p3
+                    hint_text: 'Введіть P3'
+                    multiline: False
+            Label:
+                id: error_label
+                text: "Заповніть всі поля вище"
             Button:
-                text: "bx2"
-        BoxLayout:
-            BoxLayout:
-                Button:
-                    text: "Load X"
-                    on_release:
-                        app.file_chooser('x')
-                Button:
-                    text: "Load Y"
-                    on_release:
-                        app.file_chooser('y')
-    BoxLayout:
-        size_hint: 1, .15
-        Button:
-            text: "<="
-        Button:
-            text: "=>"
+                size_hint: 1, .2
+                text: 'Start'
+                on_release: app.get_p_values([input_p1.text, input_p2.text, input_p3.text]); app.start()
 
+    # Нижня частина вікна (кнопки Save та Graphics)
+    BoxLayout:
+        size_hint: 1, .1
+        Button:
+            text: 'Save'
+        Button:
+            text: 'Graphics'
+
+
+<TabsWithTables@TabbedPanel>
+    do_default_tab: False
+
+    TabbedPanelItem:
+        text: 'X'
+        GridLayout:
+            cols: 7
+            Label:
+                text: 'q'
+            Label:
+                text: 'X11'
+            Label:
+                text: 'X12'
+            Label:
+                text: 'X21'
+            Label:
+                text: 'X22'
+            Label:
+                text: 'X31'
+            Label:
+                text: 'X32'
+
+    TabbedPanelItem:
+        text: 'Y'
+        GridLayout:
+            cols: 6
+            Label:
+                text: 'q'
+            Label:
+                text: 'Y1'
+            Label:
+                text: 'Y2'
+            Label:
+                text: 'Y3'
+            Label:
+                text: 'Y4'
+            Label:
+                text: 'Y5'
