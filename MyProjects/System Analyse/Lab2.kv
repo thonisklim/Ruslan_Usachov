@@ -4,64 +4,108 @@ MatrixApp
     orientation: 'vertical'
 
     BoxLayout:
-        # Ліва частина вікна (вкладки X та Y)
+        # Ліва частина вікна (вкладки)
         TabsWithTables:
-
         # Права частина вікна (введення X, Y, P)
         BoxLayout:
+            size_hint: .7, 1
             orientation: 'vertical'
-            GridLayout:
-                size_hint: 1, .4
-                cols: 2
-                Button:
-                    text: 'Input X'
-                    on_release: app.file_chooser('x')
-                Button:
-                    text: 'Input Y'
-                    on_release: app.file_chooser('y')
-            GridLayout:
-                cols: 2
-                size_hint: 1, .3
-                Label:
-                    text: 'P1'
-                TextInput:
-                    id: input_p1
-                    hint_text: 'Введіть P1'
-                    multiline: False
-                Label:
-                    text: 'P2'
-                TextInput:
-                    id: input_p2
-                    hint_text: 'Введіть P2'
-                    multiline: False
-                Label:
-                    text: 'P3'
-                TextInput:
-                    id: input_p3
-                    hint_text: 'Введіть P3'
-                    multiline: False
+            BoxLayout:
+                # radio buttons
+                BoxLayout:
+                    size_hint: .2, 1
+                    orientation: "vertical"
+                    CheckBox:
+                        active: True
+                        allow_no_selection: False
+                        group: "polinomes"
+                        on_active: app.choose_polinome(1)
+                    CheckBox:
+                        group: "polinomes"
+                        allow_no_selection: False
+                        on_active: app.choose_polinome(2)
+                    CheckBox:
+                        group: "polinomes"
+                        allow_no_selection: False
+                        on_active: app.choose_polinome(3)
+                    CheckBox:
+                        group: "polinomes"
+                        allow_no_selection: False
+                        on_active: app.choose_polinome(4)
+                # labels for radio buttons
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Поліном Чебишева"
+                    Label:
+                        text: "Поліном Лежандра"
+                    Label:
+                        text: "Поліном Лагерра"
+                    Label:
+                        text: "Поліном Ерміта"
+            BoxLayout:
+                # size_hint: 1, .5
+                # labels for text inputs:
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint: .2, 1
+                    Label:
+                        text: 'P1'
+                    Label:
+                        text: 'P2'
+                    Label:
+                        text: 'P3'
+                    Label:
+                        text: 'i_Y'
+                # text inputs:
+                BoxLayout:
+                    orientation: "vertical"
+                    padding: 0, 0, "10dp", 0
+                    TextInput:
+                        id: input_p1
+                        hint_text: 'Введіть P1'
+                        multiline: False
+                    TextInput:
+                        id: input_p2
+                        hint_text: 'Введіть P2'
+                        multiline: False
+                    TextInput:
+                        id: input_p3
+                        hint_text: 'Введіть P3'
+                        multiline: False
+                    TextInput:
+                        id: input_i_y
+                        hint_text: 'Введіть порядковий номер Y'
+                        multiline: False
             Label:
                 id: error_label
-                text: "Заповніть всі поля вище"
-            Button:
-                size_hint: 1, .2
-                text: 'Start'
-                on_release: app.get_p_values([input_p1.text, input_p2.text, input_p3.text]); app.start()
-
-    # Нижня частина вікна (кнопки Save та Graphics)
-    BoxLayout:
-        size_hint: 1, .1
-        Button:
-            text: 'Save'
-        Button:
-            text: 'Graphics'
+                text: "Заповніть всі поля нижче"
+            BoxLayout:
+                orientation: "vertical"
+                padding: "2dp"
+                BoxLayout:
+                    Button:
+                        text: 'Input X'
+                        on_release: app.file_chooser('x')
+                    Button:
+                        text: 'Input Y'
+                        on_release: app.file_chooser('y')
+                Button:
+                    text: 'Start'
+                    on_release: app.get_values([input_p1.text, input_p2.text, input_p3.text], input_i_y.text); app.start()
+                Button:
+                    text: 'Save'
+                    on_release: app.file_saver()
+                Button:
+                    id: graphic
+                    text: 'Graphics'
 
 
 <TabsWithTables@TabbedPanel>
     do_default_tab: False
 
     TabbedPanelItem:
-        text: 'X'
+        text: 'Norm X'
         GridLayout:
             cols: 7
             Label:
@@ -80,7 +124,7 @@ MatrixApp
                 text: 'X32'
 
     TabbedPanelItem:
-        text: 'Y'
+        text: 'Norm Y'
         GridLayout:
             cols: 6
             Label:
@@ -95,3 +139,35 @@ MatrixApp
                 text: 'Y4'
             Label:
                 text: 'Y5'
+
+    TabbedPanelItem:
+        text: 'Lambdas'
+        GridLayout:
+            cols: 6
+            Label:
+                text: 'q'
+            Label:
+                text: 'Y1'
+            Label:
+                text: 'Y2'
+            Label:
+                text: 'Y3'
+            Label:
+                text: 'Y4'
+            Label:
+                text: 'Y5'
+
+    TabbedPanelItem:
+        text: 'Psi'
+
+    TabbedPanelItem:
+        text: 'a'
+
+    TabbedPanelItem:
+        text: 'F'
+
+    TabbedPanelItem:
+        text: 'c'
+
+    TabbedPanelItem:
+        text: 'F(x1 x2 x3)'
