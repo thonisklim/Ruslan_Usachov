@@ -1,5 +1,5 @@
+import os
 import matplotlib.pyplot as plt
-from kivy.app import App
 import cj_gradient as cj
 import polinomes as pol
 import numpy as np
@@ -42,13 +42,60 @@ def format_table(table):
     return formatted_table
 
 
-class Lab2App(App):
+def main_loop():
+    lab_obj = Lab2App()
+    while 1:
+        match input(f"1: Обрати файл для Х\n"
+                    f"2: Обрати файл для Y\n"
+                    f"3: Обрати тип поліному\n"
+                    f"4: Обраховувати лямбду через 3 системи: зараз {lab_obj.use_second_lambda_method}\n"
+                    f"5: Обраховувати через нормовані значення: зараз {lab_obj.use_normed_values}\n"
+                    f"6: Змінити ступінь поліномів, зараз {lab_obj.all_p}\n"
+                    f"7: Значення обраховуються для Y{lab_obj.k_y}\n"
+                    f"8: Вивести графік (доступно після обрахування значень)\n"
+                    f"9: Зберегти у файл\n"
+                    f"0: Вихід\n"
+                    f"Enter: Обрахувати\n"):
+            case '1':
+                lab_obj.file_chooser('x')
+            case '2':
+                lab_obj.file_chooser('y')
+            case '3':
+                lab_obj.k_pol = int(input("1: поліном Чебишова\n"
+                                          "2: поліном Лежандра\n"
+                                          "3: поліном Лагера\n"
+                                          "4: поліном Ерміта\n"))
+            case '4':
+                lab_obj.use_second_lambda_method = not lab_obj.use_second_lambda_method
+            case '5':
+                lab_obj.use_normed_values = not lab_obj.use_normed_values
+            case '6':
+                k_p = int(input("Введіть порядковий номер Р, який бажаєте змінити (1, 2, 3):\n"))
+                val = input(f"Введіть ступінь Р{k_p}:\n")
+                lab_obj.change_p(k_p, val)
+            case '7':
+                lab_obj.k_y = int(input("Введіть допустимий i_Y\n"))
+            case '8':
+                if not lab_obj.graphic_disabled:
+                    lab_obj.do_plot()
+                else:
+                    print("Спочатку обрахунки\n")
+            case '9':
+                lab_obj.save_file()
+            case '0':
+                break
+            case '':
+                lab_obj.start()
+                input("\n\nНатисніть будь-яку кнопку\n\n")
+            case _:
+                pass
+
+
+class Lab2App:
     selection = []  # file selection
     use_second_lambda_method = False
     use_normed_values = True
-    instructions = f"Введіть значення X, Y та натисніть \"Calculate\"\n" \
-                   f"Для побудови графіку натисніть кнопку \"Graphics\", вона стане активною після обрахування значень\n" \
-                   f"Потягніть цей текст курсором, щоб гортати його"
+    graphic_disabled = True
 
     x_table = []
     y_table = []
@@ -69,9 +116,6 @@ class Lab2App(App):
 
     text_out = ""
 
-    def build(self):
-        return 0
-
     def reset_tables(self):
         self.normed_x = []
         self.normed_y = []
@@ -88,7 +132,7 @@ class Lab2App(App):
         if file_path:
             self.input_table(variable_name, file_path)
         else:
-            self.change_error_message("Файл не обрано")
+            print("Файл не обрано\n")
 
     def save_file(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".txt",
@@ -97,49 +141,26 @@ class Lab2App(App):
         if file_path:
             with open(file_path, 'w') as file:
                 file.write(self.text_out)
-            print(f"File saved at: {file_path}")
+            print(f"File saved at: {file_path}\n")
 
     def choose_polinome(self, k):
         self.k_pol = k
-
-    def change_error_message(self, message):
-        self.root.ids.error_label.text = message
-
-    def update_dimms(self, variable_name):
-        match variable_name:
-            case 'x':
-                self.root.ids.dim_x1.text = str(self.n[0][0])
-                self.root.ids.dim_x2.text = str(self.n[0][1])
-                self.root.ids.dim_x3.text = str(self.n[0][2])
-            case 'y':
-                self.root.ids.dim_y.text = str(self.n[1][0])
-
-    def update_p(self, k_p):
-        match k_p:
-            case 1:
-                self.root.ids.input_p1.hint_text = str(self.all_p[k_p - 1])
-            case 2:
-                self.root.ids.input_p2.hint_text = str(self.all_p[k_p - 1])
-            case 3:
-                self.root.ids.input_p3.hint_text = str(self.all_p[k_p - 1])
 
     def change_p(self, k_p, value):
         if value != '':
             try:
                 self.all_p[k_p - 1] = int(value)
-                self.change_error_message(f"P{k_p} змінене")
-                self.update_p(k_p)
             except ValueError:
-                self.change_error_message("Це має бути число")
+                print("Це має бути число\n")
 
     def find_best_p(self):
         approx = []
         for pol_type in range(4):
             pol_approxs = {}
             self.k_pol = pol_type + 1
-            for p1 in range(1, 9):
-                for p2 in range(1, 9):
-                    for p3 in range(1, 9):
+            for p1 in range(1, 11):
+                for p2 in range(1, 11):
+                    for p3 in range(1, 11):
                         self.all_p = [p1, p2, p3]
                         self.processing()
                         print(f'APPROXIMATION: {[self.approximation, [p1, p2, p3], self.k_pol]}')
@@ -159,14 +180,14 @@ class Lab2App(App):
     def program_values_out(self):
         # normed -> lambdas -> psi -> a -> F(x) -> c -> F(x1, x2, x3)
         # f"approximation = {self.approximation}",
-        text_out = ["Нормовані значення Х:\n" + do_first_line('X', self.n[0]) + format_table(self.normed_x),
-                    "Нормовані значення Y:\n" + do_first_line('Y', self.n[1]) + format_table(self.normed_y),
-                    "Лямбди:\n" + format_table(self.lambdas),
-                    "PSI:\n" + do_first_line('PSI', self.n[0]) + format_table(self.psi_table),
-                    "PSI через поліном:\n" + self.open_psi(),
+        text_out = [f"Нормовані значення Х:\n{do_first_line('X', self.n[0])}{format_table(self.normed_x)}",
+                    f"Нормовані значення Y:\n{do_first_line('Y', self.n[1])}{format_table(self.normed_y)}",
+                    f"Лямбди:\n{format_table(self.lambdas)}",
+                    f"PSI:\n{do_first_line('PSI', self.n[0])}{format_table(self.psi_table)}",
+                    f"PSI через поліном:\n{self.open_psi()}",
                     f"a:\n{format_table(self.a_values)}",
-                    "Ф(xi):\n" + do_first_line('Ф', [len(self.n[0])]) + format_table(self.f_table),
-                    "Ф(Xi) через поліном:\n" + self.open_f(),
+                    f"Ф(xi):\n{do_first_line('Ф', [len(self.n[0])]) + format_table(self.f_table)}",
+                    f"Ф(Xi) через поліном:\n{self.open_f()}",
                     f"c:\n{format_table(self.c_values)}",
                     f"Ф{self.k_y}(x1, x2, x3):\n{format_table(self.main_f_table)}",
                     f"Ф{self.k_y}(x1, x2, x3) = {self.open_main_f()}",
@@ -174,8 +195,8 @@ class Lab2App(App):
                     f"Ф{self.k_y}(x1, x2, x3) у вигляді багаточлену (у нормованому вигляді):\n{self.open_super_pol_main_f()}",
                     f"Ф{self.k_y}(x1, x2, x3) у вигляді багаточлену (у ненормованому вигляді):\n{self.open_unnormed_super_pol_main_f()}"]
         self.text_out = "\n\n".join(text_out)
-        self.root.ids.tab_normed_x.text = self.text_out
-        self.root.ids.graphic.disabled = False
+        # self.root.ids.tab_normed_x.text = self.text_out
+        self.graphic_disabled = False
 
     def get_values(self, i_y):
         try:
@@ -184,7 +205,7 @@ class Lab2App(App):
         except ValueError:
             pass
         else:
-            self.change_error_message("i_y не може бути більшим за\nрозмірність Y")
+            print("i_y не може бути більшим за\nрозмірність Y")
 
     def input_table(self, variable_name, file_path):
         print(file_path)
@@ -207,7 +228,6 @@ class Lab2App(App):
                 # defining dimensions of input tables
                 if dim:
                     self.n[variable_name == 'y'] = dim
-                    self.update_dimms(variable_name)
                     print(self.n)
                 else:
                     exit("wrong variable_name")
@@ -225,14 +245,11 @@ class Lab2App(App):
 
     def start(self):
         if self.x_table == [] or self.y_table == []:
-            self.change_error_message("Таблиці пусті, без даних нічого не спрацює")
-            print("Не хочу працювати з пустими таблицями")
+            print("Таблиці пусті, без даних нічого не спрацює")
         elif len(self.x_table) != len(self.y_table):
-            self.change_error_message("Таблиці мають неоднакову кількість рядків")
             print("А спрацювало б, якби кількість рядків у таблицях співпадала")
         else:
             self.reset_tables()
-            self.change_error_message("Все чудово")
             self.processing()
             # print(self.find_best_p())
 
@@ -247,7 +264,7 @@ class Lab2App(App):
             l_table.extend(self.find_lambda_k_m2(x_k + 1))
         self.lambdas = [self.structure_lambda(self.find_lambdas_m1()), self.structure_lambda(np.array(l_table))][self.use_second_lambda_method]
         print(self.lambdas)
-        self.psi_table = self.find_psi()
+        self.psi_table = self.find_psi()[0]
         self.a_values = self.find_a()
         self.f_table = self.find_f()
         self.c_values = self.find_c()
@@ -355,7 +372,6 @@ class Lab2App(App):
             line = []
             # x_k = 0 1 2
             for x_k in range(len(dim_x)):
-                pos_x = sum(self.n[0][i] for i in range(x_k))
                 my_p = self.all_p[x_k] + 1
                 # j = 0 1
                 for j in range(dim_x[x_k]):
@@ -364,10 +380,10 @@ class Lab2App(App):
                     for p in range(my_p):
                         # we take first raw in normed_x for calculating polinom
                         a = self.lambdas[x_k][p + j * my_p]
-                        s_var += a * do_polinom(self.k_pol, self.normed_x[q][pos_x + j], p)
+                        s_var += a * do_polinom(self.k_pol, self.normed_x[q][x_k + j * dim_x[x_k]], p)
                     line.append(s_var)
             sum_var.append(line)
-        return np.array(sum_var)
+        return [np.array(sum_var), 0]
 
     def find_a(self):
         return cj.do_conjugate_gradient(self.psi_table, self.normed_y[:, self.k_y - 1])
@@ -537,4 +553,4 @@ def do_unnorm(origin_table):
     return table
 
 
-Lab2App().run()
+main_loop()

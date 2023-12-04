@@ -4,6 +4,7 @@ import cj_gradient as cj
 import polinomes as pol
 import numpy as np
 import sympy as sp
+from scipy.optimize import minimize
 from collections.abc import Iterable
 from sklearn.preprocessing import minmax_scale
 from tkinter import filedialog
@@ -42,7 +43,7 @@ def format_table(table):
     return formatted_table
 
 
-class Lab2App(App):
+class Lab3App(App):
     selection = []  # file selection
     use_second_lambda_method = False
     use_normed_values = True
@@ -114,21 +115,11 @@ class Lab2App(App):
             case 'y':
                 self.root.ids.dim_y.text = str(self.n[1][0])
 
-    def update_p(self, k_p):
-        match k_p:
-            case 1:
-                self.root.ids.input_p1.hint_text = str(self.all_p[k_p - 1])
-            case 2:
-                self.root.ids.input_p2.hint_text = str(self.all_p[k_p - 1])
-            case 3:
-                self.root.ids.input_p3.hint_text = str(self.all_p[k_p - 1])
-
     def change_p(self, k_p, value):
         if value != '':
             try:
                 self.all_p[k_p - 1] = int(value)
                 self.change_error_message(f"P{k_p} змінене")
-                self.update_p(k_p)
             except ValueError:
                 self.change_error_message("Це має бути число")
 
@@ -150,11 +141,11 @@ class Lab2App(App):
 
     def structure_lambda(self, l_table=None):
         if type(l_table) is None:
-            return [[self.lambdas[j + x_k * p] for p in range(self.all_p[x_k] + 1) for j in range(self.n[0][x_k])]
-                    for x_k in range(len(self.n[0]))]
+            return [[self.lambdas[j + x_k * p] for p in range(self.all_p[x_k] + 1)]
+                    for x_k in range(len(self.n[0])) for j in range(self.n[0][x_k])]
         else:
-            return [[l_table[j + x_k * p] for p in range(self.all_p[x_k] + 1) for j in range(self.n[0][x_k])]
-                    for x_k in range(len(self.n[0]))]
+            return [[l_table[j + x_k * p] for p in range(self.all_p[x_k] + 1)]
+                    for x_k in range(len(self.n[0])) for j in range(self.n[0][x_k])]
 
     def program_values_out(self):
         # normed -> lambdas -> psi -> a -> F(x) -> c -> F(x1, x2, x3)
@@ -245,7 +236,8 @@ class Lab2App(App):
         l_table = []
         for x_k in range(len(self.n[0])):
             l_table.extend(self.find_lambda_k_m2(x_k + 1))
-        self.lambdas = [self.structure_lambda(self.find_lambdas_m1()), self.structure_lambda(np.array(l_table))][self.use_second_lambda_method]
+        self.lambdas = [self.structure_lambda(self.find_lambdas_m1()),
+                        self.structure_lambda(np.array(l_table))][self.use_second_lambda_method]
         print(self.lambdas)
         self.psi_table = self.find_psi()
         self.a_values = self.find_a()
@@ -332,15 +324,31 @@ class Lab2App(App):
         lambda_k = cj.do_conjugate_gradient(A, self.normed_y[:, self.k_y - 1])
         return lambda_k
 
+    def find_phi(self, p):
+        dim_x = self.n[0]
+        sum_var = []
+        for q in range(len(self.normed_x)):
+            line = []
+            for x_k in range(len(dim_x)):
+                pos_x = sum(self.n[0][i] for i in range(x_k))
+                for j in range(dim_x[x_k]):
+                    my_lambda = self.lambdas[pos_x + j][p]
+                    s_var = my_lambda * np.log(1 + (2/self.k_pol) * do_polinom(self.k_pol, self.normed_x[q][pos_x + j], p))
+                    line.append(s_var)
+            sum_var.append(line)
+        return np.array(sum_var)
+
+    # TODO change
     def open_psi(self):
         text_out = ""
         for x_k in range(len(self.n[0])):
             text_line = []
+            pos_x = sum(self.n[0][i] for i in range(x_k))
             my_p = self.all_p[x_k] + 1
             for j in range(self.n[0][x_k]):
                 text_sum = ""
                 for p in range(my_p):
-                    text_sum += f"{'{:.4f}'.format(self.lambdas[x_k][p + j * my_p])} * T{p}(x{x_k + 1}{j + 1})+"
+                    text_sum += f"{'{:.4f}'.format(self.lambdas[pos_x + j][p])} * T{p}(x{x_k + 1}{j + 1})+"
                 text_sum = text_sum.replace('+-', ' - ').replace('+', ' + ')
                 text_line.append(f"PSI{x_k + 1}{j + 1} = {text_sum[:-3]}\n")
             text_out += "".join(text_line)
@@ -361,17 +369,18 @@ class Lab2App(App):
                 for j in range(dim_x[x_k]):
                     s_var = 0
                     # p = 0 1 2
-                    for p in range(my_p):
+                    for p in range(1, my_p):
                         # we take first raw in normed_x for calculating polinom
-                        a = self.lambdas[x_k][p + j * my_p]
-                        s_var += a * do_polinom(self.k_pol, self.normed_x[q][pos_x + j], p)
-                    line.append(s_var)
+                        my_lambda = self.lambdas[pos_x + j][p]
+                        s_var += np.log(1 + my_lambda * self.find_phi(p)[q][pos_x + j])
+                    line.append(np.exp(self.find_phi(0)[q][pos_x + j] + s_var) - 1)
             sum_var.append(line)
         return np.array(sum_var)
 
     def find_a(self):
         return cj.do_conjugate_gradient(self.psi_table, self.normed_y[:, self.k_y - 1])
 
+    # TODO change
     def open_f(self):
         lines = []
         for x_k in range(len(self.n[0])):
@@ -390,13 +399,14 @@ class Lab2App(App):
             line = []
             for x_k in range(len(dim_x)):
                 pos_x = sum(self.n[0][i] for i in range(x_k))
-                line.append(sum(self.a_values[pos_x + j] * self.psi_table[q][pos_x + j] for j in range(dim_x[x_k])))
+                line.append(np.exp(sum(np.log(1 + self.a_values[pos_x + j] * self.psi_table[q][pos_x + j] for j in range(dim_x[x_k])))) - 1)
             f_table.append(line)
         return np.array(f_table)
 
     def find_c(self):
         return cj.do_conjugate_gradient(self.f_table, self.normed_y[:, self.k_y - 1])
 
+    # TODO change
     def open_pol_main_f(self):
         f_val = []
         for x_k in range(len(self.n[0])):
@@ -404,10 +414,11 @@ class Lab2App(App):
             pos_x = sum(self.n[0][i] for i in range(x_k))
             for j in range(self.n[0][x_k]):
                 for p in range(my_p):
-                    multiplier = self.lambdas[x_k][p + j * my_p] * self.a_values[pos_x + j] * self.c_values[x_k]
+                    multiplier = self.lambdas[pos_x + j][p] * self.a_values[pos_x + j] * self.c_values[x_k]
                     f_val.append(f"{multiplier}*T{p}(x{x_k + 1}{j + 1})")
         return ' + '.join(f_val)
 
+    # TODO change
     def open_super_pol_main_f(self):
         f_val = []
         for x_k in range(len(self.n[0])):
@@ -415,10 +426,11 @@ class Lab2App(App):
             pos_x = sum(self.n[0][i] for i in range(x_k))
             for j in range(self.n[0][x_k]):
                 for p in range(my_p):
-                    multiplier = self.lambdas[x_k][p + j * my_p] * self.a_values[pos_x + j] * self.c_values[x_k]
+                    multiplier = self.lambdas[pos_x + j][p] * self.a_values[pos_x + j] * self.c_values[x_k]
                     f_val.append(str(sp.expand(open_polinom(self.k_pol, f"x{x_k + 1}{j + 1}", p) * multiplier)).replace("**", '^'))
         return ' + '.join(f_val)
 
+    # TODO change
     def open_unnormed_super_pol_main_f(self):
         f_val = []
         coef_matrix = do_unnorm(self.do_coefficients_matrix())
@@ -432,6 +444,7 @@ class Lab2App(App):
                     f_val.append(str(sp.expand(open_polinom(self.k_pol, f"x{x_k + 1}{j + 1}", p) * multiplier)).replace("**", '^'))
         return ' + '.join(f_val)
 
+    # TODO change
     def open_main_f(self):
         text_sum = ""
         for f_k in range(len(self.f_table[0])):
@@ -442,7 +455,7 @@ class Lab2App(App):
     def find_main_f(self):
         f_table = []
         for q in range(len(self.f_table)):
-            f_table.append(sum(self.c_values[f_k] * self.f_table[q][f_k] for f_k in range(len(self.f_table[0]))))
+            f_table.append(sum(np.log(1 + self.c_values[f_k] * self.f_table[q][f_k]) for f_k in range(len(self.f_table[0]))))
         return np.array(f_table)
 
     def find_approximation_values(self, main_f_table, y_table):
@@ -454,6 +467,25 @@ class Lab2App(App):
         else:
             return max(self.find_approximation_values(do_unnorm(self.main_f_table), self.y_table))
 
+    def find_V(self):
+        all_p = self.all_p
+        A = []
+        for q in range(len(self.x_table)):
+            a_line = []
+            # k = 0 1 2
+            for k in range(len(self.n[0])):
+                pos_x = sum(self.n[0][i] for i in range(k))
+                dim_x = self.n[0][k]
+                # j = 0 1
+                for j in range(dim_x):
+                    a_line.append(sum(np.log(1 + self.lambdas[pos_x + j][p] * self.find_phi(p)[q][pos_x + j])
+                                      for p in range(1, all_p[k] + 1)))
+            A.append(a_line)
+        A = np.array(A)
+        # b = np.array(sum())
+        return cj.do_conjugate_gradient(A, self.normed_y[:, self.k_y - 1])
+
+    # TODO change
     def find_unnormed_f(self):
         table = []
         for q in range(len(self.f_table)):
@@ -472,7 +504,7 @@ class Lab2App(App):
             for j in range(self.n[0][x_k]):
                 line = []
                 for p in range(my_p):
-                    line.append(self.lambdas[x_k][p + j * my_p] * self.a_values[pos_x + j] * self.c_values[x_k])
+                    line.append(self.lambdas[pos_x + j][p] * self.a_values[pos_x + j] * self.c_values[x_k])
                 coef_mtrx.append(np.array(line))
         return coef_mtrx
 
@@ -500,19 +532,16 @@ def find_dimension(variable_name, list_line):
 def do_polinom(k_polinom, x, n):
     match k_polinom:
         case 1:
-            return pol.do_chebish_polinom(x, n)
+            return pol.do_offset1_chebish_polinom(x, n)
         case 2:
-            return pol.do_lezhandr_polinom(x, n)
-        case 3:
-            return pol.do_lagerr_polinom(x, n)
-        case 4:
-            return pol.do_ermit_polinom(x, n)
+            return pol.do_offset2_chebish_polinom(x, n)
 
 
+# TODO change
 def open_polinom(k_polinom, var_name, n):
     match k_polinom:
         case 1:
-            return pol.do_chebish_polinom_univ(var_name, n)
+            return pol.do_offset1_chebish_polinom_univ(var_name, n)
         case 2:
             return pol.do_lezhandr_polinom_univ(var_name, n)
         case 3:
@@ -537,4 +566,50 @@ def do_unnorm(origin_table):
     return table
 
 
-Lab2App().run()
+def chebyshev_criterion(coefficients, X, Y):
+    """
+    Обчислення критерію Чебишева для апроксимації.
+
+    Параметри:
+    - coefficients: Коефіцієнти поліному Чебишева.
+    - X: Таблиця X зі значеннями Х.
+    - Y: Таблиця Y зі значеннями цільової функції.
+
+    Повертає:
+    - Критерій Чебишева (максимальне відхилення).
+    """
+    approx_values = np.polynomial.chebyshev.chebval(np.array(X), coefficients)
+    max_deviation = np.max(np.abs(approx_values - np.array(Y)))
+    return max_deviation  # Мінімізація критерію, тому використовується знак мінус
+
+
+def choose_optimal_degree(X, Y, max_degree):
+    """
+    Вибір оптимального ступеня поліному Чебишева.
+
+    Параметри:
+    - X: Таблиця X зі значеннями Х.
+    - Y: Таблиця Y зі значеннями цільової функції.
+    - max_degree: Максимальний ступінь поліному Чебишева, який розглядається.
+
+    Повертає:
+    - Оптимальні коефіцієнти поліному Чебишева для мінімізації критерію Чебишева.
+    """
+    initial_coefficients = np.zeros(max_degree + 1)  # Початкові коефіцієнти
+    result = minimize(chebyshev_criterion, initial_coefficients, args=(X, Y), method='Powell')
+    optimal_coefficients = result.x
+    return optimal_coefficients
+
+# Приклад використання:
+# Замініть X_data і Y_data на ваші дані
+X_data = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+Y_data = [10, 20, 30]
+
+# Припускаємо, що ступінь поліному Чебишева не перевищує 2
+max_degree = 2
+
+optimal_coefficients = choose_optimal_degree(X_data, Y_data, max_degree)
+print("Оптимальні коефіцієнти поліному Чебишева:", optimal_coefficients)
+
+
+Lab3App().run()

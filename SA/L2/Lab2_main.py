@@ -247,7 +247,7 @@ class Lab2App(App):
             l_table.extend(self.find_lambda_k_m2(x_k + 1))
         self.lambdas = [self.structure_lambda(self.find_lambdas_m1()), self.structure_lambda(np.array(l_table))][self.use_second_lambda_method]
         print(self.lambdas)
-        self.psi_table = self.find_psi()
+        self.psi_table = self.find_psi()[0]
         self.a_values = self.find_a()
         self.f_table = self.find_f()
         self.c_values = self.find_c()
@@ -367,7 +367,7 @@ class Lab2App(App):
                         s_var += a * do_polinom(self.k_pol, self.normed_x[q][pos_x + j], p)
                     line.append(s_var)
             sum_var.append(line)
-        return np.array(sum_var)
+        return [np.array(sum_var), 0]
 
     def find_a(self):
         return cj.do_conjugate_gradient(self.psi_table, self.normed_y[:, self.k_y - 1])
